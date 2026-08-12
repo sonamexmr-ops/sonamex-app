@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador Plan de Trabajo - SOnamex</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { color: #1b4f72; text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #1b4f72; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #1b4f72; color: white; border: none; padding: 12px 20px; font-size: 16px; border-radius: 4px; cursor: pointer; width: 100%; margin-top: 10px; }
+        button:hover { background-color: #154360; }
+        .login-box { max-width: 400px; margin: 100px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- PANTALLA DE LOGIN -->
+    <div id="loginScreen" class="login-box">
+        <h2>SOnamex - Acceso</h2>
+        <div class="form-group">
+            <label>Usuario:</label>
+            <input type="text" id="userInput" placeholder="Ej. gerencia.comercial">
+        </div>
+        <div class="form-group">
+            <label>Contraseña:</label>
+            <input type="password" id="passInput" placeholder="Contraseña">
+        </div>
+        <button onclick="login()">Ingresar</button>
+    </div>
+
+    <!-- PANTALLA DE FORMULARIO -->
+    <div id="appScreen" class="container hidden">
+        <h2>PLAN DE TRABAJO INDIVIDUALIZADO A 15 DÍAS</h2>
+        <form id="planForm" onsubmit="generarPDF(event)">
+            
+            <div class="form-group">
+                <label>Agente Evaluado:</label>
+                <input type="text" id="agenteEvaluado" required>
+            </div>
+            <div class="form-group">
+                <label>Gerente Comercial:</label>
+                <input type="text" id="gerenteComercial" value="David Rodrigo Nava Silva" readonly>
+            </div>
+            <div class="form-group">
+                <label>Periodo del Plan:</label>
+                <input type="text" id="periodoPlan" placeholder="Ej. 12 al 27 de Agosto 2026" required>
+            </div>
+            <div class="form-group">
+                <label>Supervisor Directo:</label>
+                <input type="text" id="supervisorDirecto" required>
+            </div>
+            <div class="form-group">
+                <label>Puesto / Ruta:</label>
+                <input type="text" id="puestoRuta" required>
+            </div>
+
+            <h3>DIAGNÓSTICO DE ÁREAS DE OPORTUNIDAD</h3>
+            <div class="form-group">
+                <textarea id="diagnosticoOportunidad" rows="3" placeholder="¿Qué se detectó?" required></textarea>
+            </div>
+
+            <h3>ACUERDOS Y COMPROMISOS</h3>
+            <div class="form-group">
+                <label>Meta / Acción (Día 5):</label>
+                <input type="text" id="acuerdoDia5" required>
+                <label>Evidencia Comprobable (Día 5):</label>
+                <input type="text" id="evidenciaDia5" required>
+            </div>
+            <div class="form-group">
+                <label>Meta / Acción (Día 10):</label>
+                <input type="text" id="acuerdoDia10" required>
+                <label>Evidencia Comprobable (Día 10):</label>
+                <input type="text" id="evidenciaDia10" required>
+            </div>
+            <div class="form-group">
+                <label>Meta / Acción (Día 15):</label>
+                <input type="text" id="acuerdoDia15" required>
+                <label>Evidencia Comprobable (Día 15):</label>
+                <input type="text" id="evidenciaDia15" required>
+            </div>
+
+            <h3>CRONOGRAMA DE ACTIVIDADES (DÍAS 1-15)</h3>
+            <div class="form-group">
+                <input type="text" id="actividadDias1_5" placeholder="Actividad Días 1-5" style="margin-bottom:5px;">
+                <input type="text" id="recursosDias1_5" placeholder="Recursos Días 1-5" style="margin-bottom:5px;">
+                <input type="text" id="resultadoDias1_5" placeholder="Resultado Días 1-5">
+            </div>
+            <div class="form-group">
+                <input type="text" id="actividadDias6_10" placeholder="Actividad Días 6-10" style="margin-bottom:5px;">
+                <input type="text" id="recursosDias6_10" placeholder="Recursos Días 6-10" style="margin-bottom:5px;">
+                <input type="text" id="resultadoDias6_10" placeholder="Resultado Días 6-10">
+            </div>
+            <div class="form-group">
+                <input type="text" id="actividadDias11_15" placeholder="Actividad Días 11-15" style="margin-bottom:5px;">
+                <input type="text" id="recursosDias11_15" placeholder="Recursos Días 11-15" style="margin-bottom:5px;">
+                <input type="text" id="resultadoDias11_15" placeholder="Resultado Días 11-15">
+            </div>
+
+            <h3>VALIDACIÓN</h3>
+            <div class="form-group">
+                <label>Estatus Inicial:</label>
+                <select id="estatusValidacion">
+                    <option value="PENDIENTE">PENDIENTE</option>
+                    <option value="CUMPLIDO">CUMPLIDO</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Comentarios de Seguimiento Inicial:</label>
+                <textarea id="comentariosSeguimiento" rows="2"></textarea>
+            </div>
+
+            <button type="submit">Generar PDF y Guardar</button>
+        </form>
+    </div>
+
+    <script>
+        const usuariosValidos = {
+            "gerencia.comercial": "Sonamex2026*",
+            "coordinador.comercial": "Coord2026*",
+            "zona1.sergio": "Z1_2026*",
+            "zona2.ana": "Z2_2026*",
+            "zona3.luis": "Z3_2026*",
+            "zona4.edgar": "Z4_2026*",
+            "pet.vacante": "PET_2026*",
+            "vip.paula": "VIP_2026*"
+        };
+
+        let usuarioActual = "";
+
+        function login() {
+            const u = document.getElementById("userInput").value;
+            const p = document.getElementById("passInput").value;
+            if (usuariosValidos[u] && usuariosValidos[u] === p) {
+                usuarioActual = u;
+                document.getElementById("loginScreen").classList.add("hidden");
+                document.getElementById("appScreen").classList.remove("hidden");
+            } else {
+                alert("Usuario o contraseña incorrectos.");
+            }
+        }
+
+        function generarPDF(event) {
+            event.preventDefault();
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Recolección de valores
+            const data = {
+                usuarioRol: usuarioActual,
+                agenteEvaluado: document.getElementById("agenteEvaluado").value,
+                periodoPlan: document.getElementById("periodoPlan").value,
+                supervisorDirecto: document.getElementById("supervisorDirecto").value,
+                puestoRuta: document.getElementById("puestoRuta").value,
+                diagnosticoOportunidad: document.getElementById("diagnosticoOportunidad").value,
+                acuerdoDia5: document.getElementById("acuerdoDia5").value,
+                evidenciaDia5: document.getElementById("evidenciaDia5").value,
+                acuerdoDia10: document.getElementById("acuerdoDia10").value,
+                evidenciaDia10: document.getElementById("evidenciaDia10").value,
+                acuerdoDia15: document.getElementById("acuerdoDia15").value,
+                evidenciaDia15: document.getElementById("evidenciaDia15").value,
+                actividadDias1_5: document.getElementById("actividadDias1_5").value,
+                recursosDias1_5: document.getElementById("recursosDias1_5").value,
+                resultadoDias1_5: document.getElementById("resultadoDias1_5").value,
+                actividadDias6_10: document.getElementById("actividadDias6_10").value,
+                recursosDias6_10: document.getElementById("recursosDias6_10").value,
+                resultadoDias6_10: document.getElementById("resultadoDias6_10").value,
+                actividadDias11_15: document.getElementById("actividadDias11_15").value,
+                recursosDias11_15: document.getElementById("recursosDias11_15").value,
+                resultadoDias11_15: document.getElementById("resultadoDias11_15").value,
+                estatusValidacion: document.getElementById("estatusValidacion").value,
+                comentariosSeguimiento: document.getElementById("comentariosSeguimiento").value
+            };
+
+            // Generación de PDF (Diseño simplificado)
+            doc.text("PLAN DE TRABAJO - SONAMEX", 20, 20);
+            doc.text("Agente: " + data.agenteEvaluado, 20, 30);
+            doc.text("Periodo: " + data.periodoPlan, 20, 40);
+            doc.text("Diagnóstico: " + data.diagnosticoOportunidad, 20, 50);
+            doc.save(`Plan_Trabajo_${data.agenteEvaluado}.pdf`);
+
+            // Envío a tu URL de Apps Script
+            fetch("https://script.google.com/macros/s/AKfycbxsX6clEHbCOaWSSE_Vt1xyHDZy3yfel4nAH_JoQ8BbqO0jY9YZmokGgckcc4RRaErq/exec", {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            }).then(() => {
+                alert("¡PDF generado y datos enviados a Google Sheets!");
+            }).catch(err => {
+                alert("Error al guardar, pero el PDF se generó localmente.");
+            });
+        }
+    </script>
+</body>
+</html>
